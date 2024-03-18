@@ -26,6 +26,7 @@ const googleCallBack = async (code) => {
       grant_type: "authorization_code",
     });
     const { access_token } = data;
+    console.log(access_token);
 
     // Use access_token to fetch user profile
     const { data: profile } = await axios.get(
@@ -35,10 +36,13 @@ const googleCallBack = async (code) => {
       }
     );
 
+    console.log(profile);
+
     try {
-      const user = await DB.query("SELECT * FROM user WHERE social_id = ?", [
+      const user = await DB.query("SELECT * FROM users WHERE social_id = ?", [
         profile.id,
       ]);
+
 
       if (user && user.length > 0) {
         const accessToken = jwt.sign(
@@ -52,10 +56,10 @@ const googleCallBack = async (code) => {
           process.env.JWT_SECRET,
           { expiresIn: "1h" }
         );
-        return accessToken;
+      return accessToken;
       } else {
         const sql =
-          "INSERT INTO user (name, social_id, email, provider) VALUES (?, ?, ?, ?)";
+          "INSERT INTO users (name, social_id, email, provider) VALUES (?, ?, ?, ?)";
         const result = await DB.query(sql, [
           profile.name,
           profile.id,
